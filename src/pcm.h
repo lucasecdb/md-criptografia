@@ -44,13 +44,11 @@ DATA_CHUNK;
 class PCM
 {
 public:
-	PCM(string file);
+	PCM(char* file);
 	~PCM();
 
 	int getDataSize();
 private:
-	string file;
-
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
 	DATA_CHUNK data;
