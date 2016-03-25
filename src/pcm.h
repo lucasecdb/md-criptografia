@@ -44,7 +44,7 @@ typedef struct
 } __attribute__((__packed__))
 DATA_CHUNK;
 
-
+BYTE riffId[] = {'R', 'I', 'F', 'F'};
 
 class PCM
 {
