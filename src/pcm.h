@@ -50,7 +50,7 @@ DWORD formatId = 0x57415645;
 class PCM
 {
 public:
-	PCM(char* file);
+	PCM(string file);
 	~PCM();
 
 	DWORD getDataSize();

@@ -3,7 +3,7 @@
 namespace PCM_MD
 {
 
-PCM::PCM(char* file)
+PCM::PCM(string file)
 {
 	ifstream audio(file, ios::binary);
 
