@@ -3,14 +3,15 @@ CC=g++
 SRC=pcm.cpp main.cpp
 EXE=main
 
-LIBS=
+LIBS=$(pkg-config --libs libcrypto++)
+CFLAGS=$(pkg-config --cflags libcrypto++)
 HDRS=pcm.h
-OBJ=$(SRC:.cpp=.o)
+OBJS=$(SRC:.cpp=.o)
 
-all: $(OBJ) $(HDRS)
-	$(CC) $(FLAGS) -o $(EXE) $(OBJ) $(LIBS)
+all: $(OBJS) $(HDRS)
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
-$(OBJ): $(HDRS)
+$(OBJS): $(HDRS)
 
 clean:
 	rm -rf *.o core $(EXE)
