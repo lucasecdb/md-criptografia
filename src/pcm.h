@@ -44,9 +44,6 @@ typedef struct
 } __attribute__((__packed__))
 DATA_CHUNK;
 
-BYTE riffId[] = {'R', 'I', 'F', 'F'};
-DWORD formatId = 0x57415645;
-
 class PCM
 {
 public:
@@ -62,6 +59,9 @@ private:
 	FMT_CHUNK fmt;
 	DATA_CHUNK data;
 	BYTE *data_chunk;
+
+	BYTE riffId[4] = {'R', 'I', 'F', 'F'};
+	DWORD formatId = 0x57415645;
 };
 
 } // end of namespace
