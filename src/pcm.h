@@ -45,6 +45,7 @@ typedef struct
 DATA_CHUNK;
 
 BYTE riffId[] = {'R', 'I', 'F', 'F'};
+DWORD formatId = 0x57415645;
 
 class PCM
 {
@@ -52,13 +53,15 @@ public:
 	PCM(char* file);
 	~PCM();
 
-	int getDataSize();
+	DWORD getDataSize();
 private:
 	bool checkRiff(RIFF_CHUNK r);
+	bool checkFormat(RIFF_CHUNK r);
 
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
 	DATA_CHUNK data;
+	BYTE *data_chunk;
 };
 
 } // end of namespace
