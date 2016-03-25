@@ -7,6 +7,9 @@
 
 using namespace std;
 
+namespace PCM_MD
+{
+
 /* Data types adapted from Microsoft */
 typedef uint8_t  BYTE;  // 1 byte
 typedef uint32_t DWORD; // 4 bytes (unsigned)
@@ -41,6 +44,8 @@ typedef struct
 } __attribute__((__packed__))
 DATA_CHUNK;
 
+
+
 class PCM
 {
 public:
@@ -49,9 +54,13 @@ public:
 
 	int getDataSize();
 private:
+	bool checkRiff(RIFF_CHUNK r);
+
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
 	DATA_CHUNK data;
 };
+
+} // end of namespace
 
 #endif
