@@ -51,6 +51,10 @@ public:
 
 	DWORD getDataSize();
 	BYTE* getData();
+
+	RIFF_CHUNK getRiff();
+	FMT_CHUNK getFMT();
+	DATA_CHUNK getDataChunk();
 private:
 	bool checkRiff(RIFF_CHUNK r);
 	bool checkFormat(RIFF_CHUNK r);

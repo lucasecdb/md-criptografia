@@ -70,6 +70,21 @@ BYTE* PCM::getData()
 	return data_chunk;
 }
 
+RIFF_CHUNK PCM::getRiff()
+{
+	return riff;
+}
+
+FMT_CHUNK PCM::getFMT()
+{
+	return fmt;
+}
+
+DATA_CHUNK PCM::getDataChunk()
+{
+	return data;
+}
+
 DWORD PCM::getDataSize()
 {
 	return data.sub_chunk_size;
