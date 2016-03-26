@@ -3,9 +3,12 @@
 namespace PCM_MD
 {
 
-PCM::PCM(string file)
+BYTE riffId[4] = {'R', 'I', 'F', 'F'};
+BYTE formatId[4] = {'W', 'A', 'V', 'E'};
+
+PCM::PCM(std::string file)
 {
-	ifstream audio(file, ios::binary);
+	std::ifstream audio(file.c_str(), std::ios::binary);
 
 	if (audio.is_open())
 	{
@@ -14,7 +17,10 @@ PCM::PCM(string file)
 
 		// check for proper file format
 		if (!checkRiff(riff) || !checkFormat(riff))
-			throw exception(); // invalid file format
+		{
+			std::cerr << "Invalid file format.. exiting" << std::endl;
+			exit(1);
+		}
 
 		// get fmt chunk header
 		audio.read((char*) &fmt, sizeof(FMT_CHUNK));
@@ -24,12 +30,18 @@ PCM::PCM(string file)
 		data_chunk = new BYTE [data.sub_chunk_size];
 
 		// read all data
-		audio.read((char*) &data_chunk, data.sub_chunk_size);
+		for (int i = 0; i < data.sub_chunk_size; i++)
+		{
+			audio.read((char*) &data_chunk[i], sizeof(BYTE));
+		}
 
 		audio.close();
 	}
 	else
-		throw exception(); // unable to open file
+	{
+		std::cerr << "Couldn't open the file.. exiting" << std::endl;
+		exit(1);
+	}
 }
 
 PCM::~PCM()
@@ -39,7 +51,10 @@ PCM::~PCM()
 
 bool PCM::checkFormat(RIFF_CHUNK r)
 {
-	return riff.format == formatId;
+	for (int i = 0; i < 4; i++)
+		if (riff.format[i] != formatId[i])
+			return false;
+	return true;
 }
 
 bool PCM::checkRiff(RIFF_CHUNK r)
@@ -47,7 +62,6 @@ bool PCM::checkRiff(RIFF_CHUNK r)
 	for (int i = 0; i < 4; i++)
 		if (riff.chunk_id[i] != riffId[i])
 			return false;
-
 	return true;
 }
 
