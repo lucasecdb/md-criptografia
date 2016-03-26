@@ -2,10 +2,9 @@
 #define _PCM_H
 
 #include <fstream>
-#include <exception>
+#include <iostream>
 #include <stdint.h>
-
-using namespace std;
+#include <stdlib.h>
 
 namespace PCM_MD
 {
@@ -20,7 +19,7 @@ typedef struct
 {
 	BYTE chunk_id[4];
 	DWORD chunk_size;
-	DWORD format;
+	BYTE format[4];
 } __attribute__((__packed__))
 RIFF_CHUNK;
 
@@ -47,7 +46,7 @@ DATA_CHUNK;
 class PCM
 {
 public:
-	PCM(string file);
+	PCM(std::string file);
 	~PCM();
 
 	DWORD getDataSize();
@@ -59,9 +58,6 @@ private:
 	FMT_CHUNK fmt;
 	DATA_CHUNK data;
 	BYTE *data_chunk;
-
-	BYTE riffId[4] = {'R', 'I', 'F', 'F'};
-	DWORD formatId = 0x57415645;
 };
 
 } // end of namespace
