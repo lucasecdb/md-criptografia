@@ -61,8 +61,8 @@ private:
 
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
-	DATA_CHUNK data;
-	BYTE *data_chunk;
+	DATA_CHUNK data_chunk;
+	BYTE *data;
 };
 
 } // end of namespace

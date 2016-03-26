@@ -25,14 +25,14 @@ PCM::PCM(std::string file)
 		// get fmt chunk header
 		audio.read((char*) &fmt, sizeof(FMT_CHUNK));
 		// get data metadata
-		audio.read((char*) &data, sizeof(DATA_CHUNK));
+		audio.read((char*) &data_chunk, sizeof(DATA_CHUNK));
 
-		data_chunk = new BYTE [data.sub_chunk_size];
+		data = new BYTE [data_chunk.sub_chunk_size];
 
 		// read all data
-		for (int i = 0; i < data.sub_chunk_size; i++)
+		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
 		{
-			audio.read((char*) &data_chunk[i], sizeof(BYTE));
+			audio.read((char*) &data[i], sizeof(BYTE));
 		}
 
 		audio.close();
@@ -46,7 +46,7 @@ PCM::PCM(std::string file)
 
 PCM::~PCM()
 {
-	delete[] data_chunk;
+	delete[] data;
 }
 
 bool PCM::checkFormat(RIFF_CHUNK r)
@@ -67,7 +67,7 @@ bool PCM::checkRiff(RIFF_CHUNK r)
 
 BYTE* PCM::getData()
 {
-	return data_chunk;
+	return data;
 }
 
 RIFF_CHUNK PCM::getRiff()
@@ -82,12 +82,12 @@ FMT_CHUNK PCM::getFMT()
 
 DATA_CHUNK PCM::getDataChunk()
 {
-	return data;
+	return data_chunk;
 }
 
 DWORD PCM::getDataSize()
 {
-	return data.sub_chunk_size;
+	return data_chunk.sub_chunk_size;
 }
 
 } // end of namespace
