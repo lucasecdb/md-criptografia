@@ -50,6 +50,7 @@ public:
 	~PCM();
 
 	DWORD getDataSize();
+	BYTE* getData();
 private:
 	bool checkRiff(RIFF_CHUNK r);
 	bool checkFormat(RIFF_CHUNK r);

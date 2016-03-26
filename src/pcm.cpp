@@ -65,6 +65,11 @@ bool PCM::checkRiff(RIFF_CHUNK r)
 	return true;
 }
 
+BYTE* PCM::getData()
+{
+	return data_chunk;
+}
+
 DWORD PCM::getDataSize()
 {
 	return data.sub_chunk_size;
