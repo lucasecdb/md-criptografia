@@ -17,10 +17,10 @@ bool ENCRYPT = false;
 
 void usage()
 {
-	printf("usage: ./main [OPTIONS...] [in_file] [out_file]\n");
+	printf("usage: ./main [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
-	printf("\t-d Decrypt in_file and put the decryption result in out_file\n");
-	printf("\t-e Encrypt in_file and put the encryption result in out_file\n");
+	printf("\t-d key     Decrypt in_file and put the decryption result in out_file\n");
+	printf("\t-e key     Encrypt in_file and put the encryption result in out_file\n");
 }
 
 void decrypt(string in, string out, char *key)
@@ -79,5 +79,6 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
+		decrypt(in_file, out_file, key);
 	}
 }
