@@ -49,15 +49,15 @@ public:
 	PCM(std::string file);
 	~PCM();
 
-	DWORD getDataSize();
-	BYTE* getData();
+	DWORD get_data_size();
+	BYTE* get_data();
 
-	RIFF_CHUNK getRiff();
-	FMT_CHUNK getFMT();
-	DATA_CHUNK getDataChunk();
+	RIFF_CHUNK get_riff();
+	FMT_CHUNK get_FMT();
+	DATA_CHUNK get_data_chunk();
 private:
-	bool checkRiff(RIFF_CHUNK r);
-	bool checkFormat(RIFF_CHUNK r);
+	bool check_riff(RIFF_CHUNK r);
+	bool check_format(RIFF_CHUNK r);
 
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;

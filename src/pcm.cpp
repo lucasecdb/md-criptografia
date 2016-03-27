@@ -16,7 +16,7 @@ PCM::PCM(std::string file)
 		audio.read((char*) &riff, sizeof(RIFF_CHUNK));
 
 		// check for proper file format
-		if (!checkRiff(riff) || !checkFormat(riff))
+		if (!check_riff(riff) || !check_format(riff))
 		{
 			std::cerr << "Invalid file format.. exiting" << std::endl;
 			exit(1);
@@ -49,7 +49,7 @@ PCM::~PCM()
 	delete[] data;
 }
 
-bool PCM::checkFormat(RIFF_CHUNK r)
+bool PCM::check_format(RIFF_CHUNK r)
 {
 	for (int i = 0; i < 4; i++)
 		if (riff.format[i] != formatId[i])
@@ -57,7 +57,7 @@ bool PCM::checkFormat(RIFF_CHUNK r)
 	return true;
 }
 
-bool PCM::checkRiff(RIFF_CHUNK r)
+bool PCM::check_riff(RIFF_CHUNK r)
 {
 	for (int i = 0; i < 4; i++)
 		if (riff.chunk_id[i] != riffId[i])
@@ -65,27 +65,27 @@ bool PCM::checkRiff(RIFF_CHUNK r)
 	return true;
 }
 
-BYTE* PCM::getData()
+BYTE* PCM::get_data()
 {
 	return data;
 }
 
-RIFF_CHUNK PCM::getRiff()
+RIFF_CHUNK PCM::get_riff()
 {
 	return riff;
 }
 
-FMT_CHUNK PCM::getFMT()
+FMT_CHUNK PCM::get_FMT()
 {
 	return fmt;
 }
 
-DATA_CHUNK PCM::getDataChunk()
+DATA_CHUNK PCM::get_data_chunk()
 {
 	return data_chunk;
 }
 
-DWORD PCM::getDataSize()
+DWORD PCM::get_data_size()
 {
 	return data_chunk.sub_chunk_size;
 }
