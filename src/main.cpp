@@ -5,6 +5,7 @@
 #include "pcm.h"
 
 // AES crypto library
+#include <crypto++/osrng.h> // required by AutoSeededRandomPool
 #include <crypto++/aes.h>
 #include <crypto++/modes.h>
 #include <crypto++/filters.h>
@@ -23,12 +24,25 @@ void usage()
 	printf("\t-e key     Encrypt in_file and put the encryption result in out_file\n");
 }
 
-void decrypt(string in, string out, char *key)
+void decrypt(string in, string out, const char* key)
 {
 }
 
-void encrypt(string in, string out, char *key)
+void encrypt(string in, string out, const char* key)
 {
+	PCM in_audio(in);
+	AutoSeededRandomPool rnd;
+
+	// get raw audio data
+	char* data = (char*) in_audio.get_data();
+
+	// gen random iv
+	byte iv[AES::BLOCKSIZE];
+	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
+
+	// encrypt
+	CFB_Mode<AES>::Encryption cfb_encryption((byte*)key, strlen(key), iv);
+	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 }
 
 int main(int argc, char* argv[])
@@ -52,7 +66,7 @@ int main(int argc, char* argv[])
 	}
 
 	// key to encrypt and decrypt
-	char *key;
+	char* key;
 
 	// get command line arguments
 	char c;
