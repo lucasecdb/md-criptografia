@@ -3,8 +3,8 @@ CC=g++
 SRC=pcm.cpp main.cpp
 EXE=main
 
-LIBS=$(pkg-config --libs libcrypto++)
-CFLAGS=$(pkg-config --cflags libcrypto++) -std=c++11
+LIBS=$(shell pkg-config --libs libcrypto++)
+CFLAGS=$(shell pkg-config --cflags libcrypto++) -std=c++11
 HDRS=pcm.h
 OBJS=$(SRC:.cpp=.o)
 
