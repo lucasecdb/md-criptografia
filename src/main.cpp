@@ -85,11 +85,31 @@ void write_audio(PCM in_audio, string out, char* data)
 
 void decrypt(string in, string out, const byte* key)
 {
+	printf("[*] Decrypting %s with key %s\n", in.c_str(), key);
+
+	PCM in_audio(in);
+	AutoSeededRandomPool rnd;
+
+	// get raw audio data
+	char* data = (char*) in_audio.get_data();
+
+	// gen random iv
+	byte iv[AES::BLOCKSIZE];
+	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
+
+	// decrypt
+	CFB_Mode<AES>::Decryption cfb_decryption(key, strlen((char*)key), iv);
+	cfb_decryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+
+	printf("[*] Finished decryption\n");
+
+	printf("[*] Writing to file %s\n", out.c_str());
+	write_audio(in_audio, out, data);
 }
 
 void encrypt(string in, string out, const byte* key)
 {
-	printf("[*] Encrypting %s with key %s\n",  in.c_str(), key);
+	printf("[*] Encrypting %s with key %s\n", in.c_str(), key);
 
 	PCM in_audio(in);
 	AutoSeededRandomPool rnd;
@@ -102,7 +122,7 @@ void encrypt(string in, string out, const byte* key)
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
 	// encrypt
-	CFB_Mode<AES>::Encryption cfb_encryption((byte*)key, strlen((char*)key), iv);
+	CFB_Mode<AES>::Encryption cfb_encryption(key, strlen((char*)key), iv);
 	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 
 	printf("[*] Finished encryption\n");
