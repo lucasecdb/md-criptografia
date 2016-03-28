@@ -30,3 +30,6 @@
 # Junk files
 *~
 *.swp
+
+# executable
+main
