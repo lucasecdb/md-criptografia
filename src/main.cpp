@@ -79,6 +79,8 @@ void write_audio(PCM in_audio, string out, char* data)
 		{
 			out_file.write((char*)&data[i], sizeof(data[i]));
 		}
+
+		out_file.close();
 	}
 	else
 	{
