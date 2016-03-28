@@ -27,13 +27,16 @@ PCM::PCM(std::string file)
 		// get data metadata
 		audio.read((char*) &data_chunk, sizeof(DATA_CHUNK));
 
-		data = new BYTE [data_chunk.sub_chunk_size];
+		//data = new BYTE [data_chunk.sub_chunk_size];
+		BYTE data[data_chunk.sub_chunk_size];
 
 		// read all data
 		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
 		{
 			audio.read((char*) &data[i], sizeof(BYTE));
 		}
+
+		this->data = data;
 
 		audio.close();
 	}
@@ -42,11 +45,6 @@ PCM::PCM(std::string file)
 		std::cerr << "Couldn't open the file.. exiting" << std::endl;
 		exit(1);
 	}
-}
-
-PCM::~PCM()
-{
-	delete[] data;
 }
 
 bool PCM::check_format(RIFF_CHUNK r)

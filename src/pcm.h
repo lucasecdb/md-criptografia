@@ -47,7 +47,6 @@ class PCM
 {
 public:
 	PCM(std::string file);
-	~PCM();
 
 	DWORD get_data_size();
 	BYTE* get_data();
