@@ -39,12 +39,62 @@ void gen_key(char key[17])
 	key[16] = 0;
 }
 
+void write_audio(PCM in_audio, string out, char* data)
+{
+	ofstream out_file(out, ios::binary);
+
+	if (out_file.is_open())
+	{
+		printf("[*] Writing headers\n");
+
+		// RIFF headers
+		RIFF_CHUNK in_riff = in_audio.get_riff();
+
+		out_file.write((char*)&in_riff.chunk_id, sizeof(in_riff.chunk_id));
+		out_file.write((char*)&in_riff.chunk_size, sizeof(in_riff.chunk_size));
+		out_file.write((char*)&in_riff.format, sizeof(in_riff.format));
+
+		// FMT headers
+		FMT_CHUNK in_fmt = in_audio.get_fmt();
+
+		out_file.write((char*)&in_fmt.sub_chunk_id, sizeof(in_fmt.sub_chunk_id));
+		out_file.write((char*)&in_fmt.sub_chunk_size, sizeof(in_fmt.sub_chunk_size));
+		out_file.write((char*)&in_fmt.audio_format, sizeof(in_fmt.audio_format));
+		out_file.write((char*)&in_fmt.num_channels, sizeof(in_fmt.num_channels));
+		out_file.write((char*)&in_fmt.sample_rate, sizeof(in_fmt.sample_rate));
+		out_file.write((char*)&in_fmt.byte_rate, sizeof(in_fmt.byte_rate));
+		out_file.write((char*)&in_fmt.block_align, sizeof(in_fmt.block_align));
+		out_file.write((char*)&in_fmt.bits_per_sample, sizeof(in_fmt.bits_per_sample));
+
+		// DATA_CHUNK headers
+		DATA_CHUNK in_data_chunk = in_audio.get_data_chunk();
+
+		out_file.write((char*)&in_data_chunk.sub_chunk_id, sizeof(in_data_chunk.sub_chunk_id));
+		out_file.write((char*)&in_data_chunk.sub_chunk_size, sizeof(in_data_chunk.sub_chunk_size));
+
+		printf("[*] Writing data\n");
+
+		// write actual crypted data
+		for (int i = 0; i < in_data_chunk.sub_chunk_size; i++)
+		{
+			out_file.write((char*)&data[i], sizeof(data[i]));
+		}
+	}
+	else
+	{
+		fprintf(stderr, "[!!] Couldn't open %s, exiting..\n", out.c_str());
+		exit(1);
+	}
+}
+
 void decrypt(string in, string out, const char* key)
 {
 }
 
 void encrypt(string in, string out, const char* key)
 {
+	printf("[*] Encrypting %s with key %s\n",  in.c_str(), key);
+
 	PCM in_audio(in);
 	AutoSeededRandomPool rnd;
 
@@ -58,6 +108,11 @@ void encrypt(string in, string out, const char* key)
 	// encrypt
 	CFB_Mode<AES>::Encryption cfb_encryption((byte*)key, strlen(key), iv);
 	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+
+	printf("[*] Finished encryption\n");
+
+	printf("[*] Writing to file %s\n", out.c_str());
+	write_audio(in_audio, out, data);
 }
 
 int main(int argc, char* argv[])
