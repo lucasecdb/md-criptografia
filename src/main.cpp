@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
 	// get command line arguments
 	char c;
-	while ((c = getopt(argc, argv, "ed:")) != -1)
+	while ((c = getopt(argc, argv, "e::d:")) != -1)
 	{
 		switch (c)
 		{
