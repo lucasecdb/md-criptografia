@@ -77,8 +77,10 @@ void write_audio(PCM in_audio, string out, char* data)
 		// write actual crypted data
 		for (int i = 0; i < in_data_chunk.sub_chunk_size; i++)
 		{
-			out_file.write((char*)&data[i], sizeof(data[i]));
+			out_file.write(&data[i], sizeof(data[i]));
 		}
+
+		printf("[*] Finished writing to file %s\n", out.c_str());
 
 		out_file.close();
 	}
