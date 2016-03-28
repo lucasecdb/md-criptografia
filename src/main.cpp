@@ -190,8 +190,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	string in_file = argv[optind++];
-	string out_file = argv[optind];
+	string in_file = argv[argc-2];
+	string out_file = argv[argc-1];
 
 	// check for file existence
 	if (access(in_file.c_str(), F_OK) == -1)
