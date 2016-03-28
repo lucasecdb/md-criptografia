@@ -7,22 +7,22 @@
 
 // AES crypto library
 #include <crypto++/osrng.h> // required by AutoSeededRandomPool
-#include <crypto++/aes.h>
+//#include <crypto++/aes.h>
 #include <crypto++/modes.h>
-#include <crypto++/filters.h>
 
 using namespace std;
 using namespace PCM_MD;
 using namespace CryptoPP;
 
 bool ENCRYPT = false;
+bool NO_GEN = false;
 
 void usage()
 {
 	printf("usage: ./main [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
 	printf("\t-d key     Decrypt in_file with key=key and put the decryption result in out_file\n");
-	printf("\t-e         Encrypt in_file and put the encryption result in out_file\n");
+	printf("\t-e [key]   Encrypt in_file and put the encryption result in out_file\n");
 }
 
 void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1])
@@ -160,6 +160,18 @@ int main(int argc, char* argv[])
 		{
 			case 'e':
 				ENCRYPT = true;
+				if (argc == 5 && strlen(optarg) == AES::DEFAULT_KEYLENGTH)
+				{
+					NO_GEN = true;
+					strncpy((char*)key, optarg, AES::DEFAULT_KEYLENGTH);
+					key[16] = 0;
+				}
+				else if (argc == 5)
+				{
+					fprintf(stderr, "In encryption mode with explicit key, it's length must be %d bytes long.\n", AES::DEFAULT_KEYLENGTH);
+					usage();
+					return 1;
+				}
 				break;
 			case 'd':
 				// check for proper usage
@@ -191,7 +203,7 @@ int main(int argc, char* argv[])
 
 	if (ENCRYPT)
 	{
-		gen_key(key);
+		if (NO_GEN) gen_key(key);
 		encrypt(in_file, out_file, key);
 	}
 	else
