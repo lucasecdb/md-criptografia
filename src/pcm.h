@@ -53,7 +53,7 @@ public:
 	BYTE* get_data();
 
 	RIFF_CHUNK get_riff();
-	FMT_CHUNK get_FMT();
+	FMT_CHUNK get_fmt();
 	DATA_CHUNK get_data_chunk();
 private:
 	bool check_riff(RIFF_CHUNK r);

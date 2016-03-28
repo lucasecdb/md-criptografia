@@ -75,7 +75,7 @@ RIFF_CHUNK PCM::get_riff()
 	return riff;
 }
 
-FMT_CHUNK PCM::get_FMT()
+FMT_CHUNK PCM::get_fmt()
 {
 	return fmt;
 }
