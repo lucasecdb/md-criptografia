@@ -163,13 +163,14 @@ int main(int argc, char* argv[])
 				break;
 			case 'd':
 				// check for proper usage
-				if (argc != 4 || strlen(optarg) != AES::DEFAULT_KEYLENGTH)
+				if (argc != 5 || strlen(optarg) != AES::DEFAULT_KEYLENGTH)
 				{
-					fprintf(stderr, "In decryption mode, one must give a 16 bytes long key.\n");
+					fprintf(stderr, "In decryption mode, one must give a %d bytes long key.\n", AES::DEFAULT_KEYLENGTH);
 					usage();
 					return 1;
 				}
 				strncpy((char*)key, optarg, AES::DEFAULT_KEYLENGTH);
+				key[16] = 0;
 				break;
 			default:
 				usage();
