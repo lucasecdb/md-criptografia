@@ -41,7 +41,7 @@ void gen_key(char key[17])
 
 void write_audio(PCM in_audio, string out, char* data)
 {
-	ofstream out_file(out, ios::binary);
+	ofstream out_file(out.c_str(), ios::binary);
 
 	if (out_file.is_open())
 	{
