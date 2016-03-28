@@ -21,7 +21,7 @@ void usage()
 {
 	printf("usage: ./main [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
-	printf("\t-d key     Decrypt in_file with key=key and put the decryption result in out_file\n");
+	printf("\t-d key     Decrypt in_file with key and put the decryption result in out_file\n");
 	printf("\t-e [key]   Encrypt in_file and put the encryption result in out_file\n");
 }
 
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
 	// get command line arguments
 	char c;
-	while ((c = getopt(argc, argv, "e::d:")) != -1)
+	while ((c = getopt(argc, argv, "::e:d")) != -1)
 	{
 		switch (c)
 		{
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
 
 	if (ENCRYPT)
 	{
-		if (NO_GEN) gen_key(key);
+		if (!NO_GEN) gen_key(key);
 		encrypt(in_file, out_file, key);
 	}
 	else
