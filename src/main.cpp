@@ -154,16 +154,16 @@ int main(int argc, char* argv[])
 
 	// get command line arguments
 	char c;
-	while ((c = getopt(argc, argv, "e:d:")) != -1)
+	while ((c = getopt(argc, argv, "ed:")) != -1)
 	{
 		switch (c)
 		{
 			case 'e':
 				ENCRYPT = true;
-				if (argc == 5 && strlen(optarg) == AES::DEFAULT_KEYLENGTH)
+				if (argc == 5 && strlen(argv[optind]) == AES::DEFAULT_KEYLENGTH)
 				{
 					NO_GEN = true;
-					strncpy((char*)key, optarg, AES::DEFAULT_KEYLENGTH);
+					strncpy((char*)key, argv[optind], AES::DEFAULT_KEYLENGTH);
 					key[16] = 0;
 				}
 				else if (argc == 5)
