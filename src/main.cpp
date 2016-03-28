@@ -24,19 +24,11 @@ void usage()
 	printf("\t-e         Encrypt in_file and put the encryption result in out_file\n");
 }
 
-void gen_key(char key[17])
+void gen_key(byte key[AES::DEFAULT_KEYLENGTH])
 {
-	const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+	AutoSeededRandomPool rnd;
 
-	for (int i = 0; i < 17; i++)
-	{
-		key[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-	}
-
-	key[16] = 0;
+	rnd.GenerateBlock(key, AES::DEFAULT_KEYLENGTH);
 }
 
 void write_audio(PCM in_audio, string out, char* data)
@@ -91,11 +83,11 @@ void write_audio(PCM in_audio, string out, char* data)
 	}
 }
 
-void decrypt(string in, string out, const char* key)
+void decrypt(string in, string out, const byte* key)
 {
 }
 
-void encrypt(string in, string out, const char* key)
+void encrypt(string in, string out, const byte* key)
 {
 	printf("[*] Encrypting %s with key %s\n",  in.c_str(), key);
 
@@ -110,7 +102,7 @@ void encrypt(string in, string out, const char* key)
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
 	// encrypt
-	CFB_Mode<AES>::Encryption cfb_encryption((byte*)key, strlen(key), iv);
+	CFB_Mode<AES>::Encryption cfb_encryption((byte*)key, strlen((char*)key), iv);
 	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 
 	printf("[*] Finished encryption\n");
@@ -129,7 +121,7 @@ int main(int argc, char* argv[])
 	}
 
 	// key to encrypt and decrypt
-	char key[17];
+	byte key[AES::DEFAULT_KEYLENGTH];
 
 	// get command line arguments
 	char c;
@@ -142,13 +134,13 @@ int main(int argc, char* argv[])
 				break;
 			case 'd':
 				// check for proper usage
-				if (argc != 4 || strlen(optarg) != 16)
+				if (argc != 4 || strlen(optarg) != AES::DEFAULT_KEYLENGTH)
 				{
 					fprintf(stderr, "In decryption mode, one must give a 16 bytes long key.\n");
 					usage();
 					return 1;
 				}
-				strncpy(key, optarg, 16);
+				strncpy((char*)key, optarg, AES::DEFAULT_KEYLENGTH);
 				break;
 			default:
 				usage();
