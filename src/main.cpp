@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <ctime>
 
 // PCM library
 #include "pcm.h"
@@ -24,11 +25,19 @@ void usage()
 	printf("\t-e         Encrypt in_file and put the encryption result in out_file\n");
 }
 
-void gen_key(byte key[AES::DEFAULT_KEYLENGTH])
+void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1])
 {
-	AutoSeededRandomPool rnd;
+	static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
 
-	rnd.GenerateBlock(key, AES::DEFAULT_KEYLENGTH);
+	srand(time(NULL));
+	for (int i = 0; i < AES::DEFAULT_KEYLENGTH; i++)
+	{
+		key[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+	}
+	key[16] = 0;
 }
 
 void write_audio(PCM in_audio, string out, char* data)
@@ -98,7 +107,7 @@ void decrypt(string in, string out, const byte* key)
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
 	// decrypt
-	CFB_Mode<AES>::Decryption cfb_decryption(key, strlen((char*)key), iv);
+	CFB_Mode<AES>::Decryption cfb_decryption(key, AES::DEFAULT_KEYLENGTH, iv);
 	cfb_decryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 
 	printf("[*] Finished decryption\n");
@@ -122,7 +131,7 @@ void encrypt(string in, string out, const byte* key)
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
 	// encrypt
-	CFB_Mode<AES>::Encryption cfb_encryption(key, strlen((char*)key), iv);
+	CFB_Mode<AES>::Encryption cfb_encryption(key, AES::DEFAULT_KEYLENGTH, iv);
 	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 
 	printf("[*] Finished encryption\n");
@@ -141,7 +150,7 @@ int main(int argc, char* argv[])
 	}
 
 	// key to encrypt and decrypt
-	byte key[AES::DEFAULT_KEYLENGTH];
+	byte key[AES::DEFAULT_KEYLENGTH + 1];
 
 	// get command line arguments
 	char c;
