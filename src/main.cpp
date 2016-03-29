@@ -112,9 +112,16 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 	byte iv[AES::BLOCKSIZE];
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
-	// decrypt
-	CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
-	cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+	if (opt == ENC)
+	{
+		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
+		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+	}
+	else
+	{
+		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
+		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+	}
 
 	printf("[*] Finished %s\n", opt == ENC ? "encrypting": "decrypting");
 
