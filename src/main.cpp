@@ -17,6 +17,12 @@ using namespace CryptoPP;
 bool ENCRYPT = false;
 bool NO_GEN = false;
 
+enum
+{
+	ENC,
+	DEC
+};
+
 void usage()
 {
 	printf("usage: ./main [OPTIONS...] in_file out_file\n");
@@ -92,9 +98,9 @@ void write_audio(PCM in_audio, string out, char* data)
 	}
 }
 
-void decrypt(string in, string out, const byte* key)
+void cfb_algo(string in, string out, const byte* key, int opt)
 {
-	printf("[*] Decrypting %s with key %s\n", in.c_str(), key);
+	printf("[*] %s %s with key %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str(), key);
 
 	PCM in_audio(in);
 	AutoSeededRandomPool rnd;
@@ -107,34 +113,10 @@ void decrypt(string in, string out, const byte* key)
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
 	// decrypt
-	CFB_Mode<AES>::Decryption cfb_decryption(key, AES::DEFAULT_KEYLENGTH, iv);
-	cfb_decryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+	CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
+	cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 
-	printf("[*] Finished decryption\n");
-
-	printf("[*] Writing to file %s\n", out.c_str());
-	write_audio(in_audio, out, data);
-}
-
-void encrypt(string in, string out, const byte* key)
-{
-	printf("[*] Encrypting %s with key %s\n", in.c_str(), key);
-
-	PCM in_audio(in);
-	AutoSeededRandomPool rnd;
-
-	// get raw audio data
-	char* data = (char*) in_audio.get_data();
-
-	// gen random iv
-	byte iv[AES::BLOCKSIZE];
-	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
-
-	// encrypt
-	CFB_Mode<AES>::Encryption cfb_encryption(key, AES::DEFAULT_KEYLENGTH, iv);
-	cfb_encryption.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
-
-	printf("[*] Finished encryption\n");
+	printf("[*] Finished %s\n", opt == ENC ? "encrypting": "decrypting");
 
 	printf("[*] Writing to file %s\n", out.c_str());
 	write_audio(in_audio, out, data);
@@ -204,10 +186,10 @@ int main(int argc, char* argv[])
 	if (ENCRYPT)
 	{
 		if (!NO_GEN) gen_key(key);
-		encrypt(in_file, out_file, key);
+		cfb_algo(in_file, out_file, key, ENC);
 	}
 	else
 	{
-		decrypt(in_file, out_file, key);
+		cfb_algo(in_file, out_file, key, DEC);
 	}
 }
