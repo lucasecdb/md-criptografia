@@ -24,7 +24,7 @@ enum
 
 void usage()
 {
-	printf("usage: ./main [OPTIONS...] in_file out_file\n");
+	printf("usage: ./pcm-crypt [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
 	printf("\t-d key_file     Decrypt in_file with key in the key_file and put the decryption result in out_file\n");
 	printf("\t-e [key_file]   Encrypt in_file with optional key in key_file and put the encryption result in out_file\n");

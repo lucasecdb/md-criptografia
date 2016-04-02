@@ -1,7 +1,7 @@
 CC=g++
 
 SRC=pcm.cpp main.cpp
-EXE=main
+EXE=pcm-crypt
 
 LIBS=$(shell pkg-config --libs libcrypto++)
 CFLAGS=$(shell pkg-config --cflags libcrypto++) -std=c++11
