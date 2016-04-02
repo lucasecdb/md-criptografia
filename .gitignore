@@ -32,4 +32,4 @@
 *.swp
 
 # executable
-main
+pcm-crypt
