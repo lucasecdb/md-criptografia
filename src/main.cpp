@@ -7,7 +7,6 @@
 
 // AES crypto library
 #include <crypto++/osrng.h> // required by AutoSeededRandomPool
-//#include <crypto++/aes.h>
 #include <crypto++/modes.h>
 
 using namespace std;
@@ -27,23 +26,53 @@ void usage()
 {
 	printf("usage: ./main [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
-	printf("\t-d key     Decrypt in_file with key and put the decryption result in out_file\n");
-	printf("\t-e [key]   Encrypt in_file and put the encryption result in out_file\n");
+	printf("\t-d key_file     Decrypt in_file with key in the key_file and put the decryption result in out_file\n");
+	printf("\t-e [key_file]   Encrypt in_file with optional key in key_file and put the encryption result in out_file\n");
 }
 
 void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1])
 {
-	static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+	AutoSeededRandomPool rnd;
+	rnd.GenerateBlock(key, AES::DEFAULT_KEYLENGTH);
+}
 
-	srand(time(NULL));
-	for (int i = 0; i < AES::DEFAULT_KEYLENGTH; i++)
+void read_key(char* key_file, byte key[16])
+{
+	if (access(key_file, F_OK) == -1)
 	{
-		key[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+		fprintf(stderr, "No such file %s\n", key_file);
+		usage();
+		exit(1);
 	}
-	key[16] = 0;
+
+	ifstream file(key_file, ios::binary);
+
+	if (file.is_open())
+	{
+		// get file size and assert it to 16 bytes
+		file.seekg(0, ios_base::end);
+		int size = file.tellg();
+
+		if (size != 16)
+		{
+			fprintf(stderr, "File %s must be only 16 bytes long\n", key_file);
+			usage();
+			exit(1);
+		}
+
+		file.seekg(0, ios_base::beg);
+		
+		for (int i = 0; i < 16; i++) {
+			file.read((char*)&key[i], sizeof(byte));
+		}
+
+		file.close();
+	}
+	else
+	{
+		fprintf(stderr, "Couldn't open file %s, exiting...\n", key_file);
+		exit(1);
+	}
 }
 
 void write_audio(PCM in_audio, string out, char* data)
@@ -100,7 +129,7 @@ void write_audio(PCM in_audio, string out, char* data)
 
 void cfb_algo(string in, string out, const byte* key, int opt)
 {
-	printf("[*] %s %s with key %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str(), key);
+	printf("[*] %s %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str());
 
 	PCM in_audio(in);
 	AutoSeededRandomPool rnd;
@@ -140,6 +169,7 @@ int main(int argc, char* argv[])
 
 	// key to encrypt and decrypt
 	byte key[AES::DEFAULT_KEYLENGTH + 1];
+	char* key_file;
 
 	// get command line arguments
 	char c;
@@ -149,29 +179,23 @@ int main(int argc, char* argv[])
 		{
 			case 'e':
 				ENCRYPT = true;
-				if (argc == 5 && strlen(argv[optind]) == AES::DEFAULT_KEYLENGTH)
+				if (argc == 5)
 				{
 					NO_GEN = true;
-					strncpy((char*)key, argv[optind], AES::DEFAULT_KEYLENGTH);
-					key[16] = 0;
-				}
-				else if (argc == 5)
-				{
-					fprintf(stderr, "In encryption mode with explicit key, it's length must be %d bytes long.\n", AES::DEFAULT_KEYLENGTH);
-					usage();
-					return 1;
+					key_file = argv[optind];
+					read_key(key_file, key);
 				}
 				break;
 			case 'd':
 				// check for proper usage
-				if (argc != 5 || strlen(optarg) != AES::DEFAULT_KEYLENGTH)
+				if (argc != 5)
 				{
-					fprintf(stderr, "In decryption mode, one must give a %d bytes long key.\n", AES::DEFAULT_KEYLENGTH);
+					fprintf(stderr, "In decryption mode, you must give a file with a key of %d bytes long.\n", AES::DEFAULT_KEYLENGTH);
 					usage();
 					return 1;
 				}
-				strncpy((char*)key, optarg, AES::DEFAULT_KEYLENGTH);
-				key[16] = 0;
+				key_file = optarg;
+				read_key(key_file, key);
 				break;
 			default:
 				usage();
@@ -192,7 +216,30 @@ int main(int argc, char* argv[])
 
 	if (ENCRYPT)
 	{
-		if (!NO_GEN) gen_key(key);
+		if (!NO_GEN)
+		{
+			printf("[*] Generating key\n");
+			gen_key(key);
+			
+			// write key to file.key
+			int counter = 0;
+			char key_file_name[12];
+
+			sprintf(key_file_name, "%07d.key", counter);
+
+			while (access(key_file_name, F_OK) != -1)
+			{
+				counter++;
+				sprintf(key_file_name, "%07d.key", counter);
+			}
+
+			printf("[*] Writing key into %s\n", key_file_name);
+
+			ofstream out_key_file(key_file_name, ios::binary);
+			out_key_file.write((char*)key, 16);
+
+			out_key_file.close();
+		}
 		cfb_algo(in_file, out_file, key, ENC);
 	}
 	else
