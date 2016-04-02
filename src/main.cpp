@@ -114,12 +114,12 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 
 	if (opt == ENC)
 	{
-		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
+		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 	}
 	else
 	{
-		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
+		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
 	}
 
