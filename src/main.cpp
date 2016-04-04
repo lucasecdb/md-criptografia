@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <stdio.h>
 #include <ctime>
 
 // PCM library
@@ -45,13 +46,13 @@ void read_key(char* key_file, byte key[16])
 		exit(1);
 	}
 
-	ifstream file(key_file, ios::binary);
+	FILE* file = fopen(key_file, "wb");
 
-	if (file.is_open())
+	if (file != NULL)
 	{
 		// get file size and assert it to 16 bytes
-		file.seekg(0, ios_base::end);
-		int size = file.tellg();
+		fseek(file, 0, SEEK_END);
+		int size = ftell(file);
 
 		if (size != 16)
 		{
@@ -60,13 +61,13 @@ void read_key(char* key_file, byte key[16])
 			exit(1);
 		}
 
-		file.seekg(0, ios_base::beg);
-		
+		fseek(file, 0, SEEK_SET);
+
 		for (int i = 0; i < 16; i++) {
-			file.read((char*)&key[i], sizeof(byte));
+			fread(&key[i], 1, sizeof(key[i]), file);
 		}
 
-		file.close();
+		fclose(file);
 	}
 	else
 	{
@@ -77,48 +78,31 @@ void read_key(char* key_file, byte key[16])
 
 void write_audio(PCM in_audio, string out, char* data)
 {
-	ofstream out_file(out.c_str(), ios::binary);
+	FILE* out_file = fopen(out.c_str(), "wb");
 
-	if (out_file.is_open())
+	if (out_file != NULL)
 	{
 		printf("[*] Writing headers\n");
 
-		// RIFF headers
-		RIFF_CHUNK in_riff = in_audio.get_riff();
-
-		out_file.write((char*)&in_riff.chunk_id, sizeof(in_riff.chunk_id));
-		out_file.write((char*)&in_riff.chunk_size, sizeof(in_riff.chunk_size));
-		out_file.write((char*)&in_riff.format, sizeof(in_riff.format));
-
-		// FMT headers
-		FMT_CHUNK in_fmt = in_audio.get_fmt();
-
-		out_file.write((char*)&in_fmt.sub_chunk_id, sizeof(in_fmt.sub_chunk_id));
-		out_file.write((char*)&in_fmt.sub_chunk_size, sizeof(in_fmt.sub_chunk_size));
-		out_file.write((char*)&in_fmt.audio_format, sizeof(in_fmt.audio_format));
-		out_file.write((char*)&in_fmt.num_channels, sizeof(in_fmt.num_channels));
-		out_file.write((char*)&in_fmt.sample_rate, sizeof(in_fmt.sample_rate));
-		out_file.write((char*)&in_fmt.byte_rate, sizeof(in_fmt.byte_rate));
-		out_file.write((char*)&in_fmt.block_align, sizeof(in_fmt.block_align));
-		out_file.write((char*)&in_fmt.bits_per_sample, sizeof(in_fmt.bits_per_sample));
+		// WAV_HDR headers
+		WAV_HDR wav = in_audio.get_wav();
+		fwrite(&wav, 1, sizeof(wav), out_file);
 
 		// DATA_CHUNK headers
-		DATA_CHUNK in_data_chunk = in_audio.get_data_chunk();
-
-		out_file.write((char*)&in_data_chunk.sub_chunk_id, sizeof(in_data_chunk.sub_chunk_id));
-		out_file.write((char*)&in_data_chunk.sub_chunk_size, sizeof(in_data_chunk.sub_chunk_size));
+		DATA_CHUNK data_chunk = in_audio.get_data_chunk();
+		fwrite(&data_chunk, 1, sizeof(data_chunk), out_file);
 
 		printf("[*] Writing data\n");
 
 		// write actual crypted data
-		for (int i = 0; i < in_data_chunk.sub_chunk_size; i++)
+		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
 		{
-			out_file.write(&data[i], sizeof(data[i]));
+			fwrite(&data[i], 1, sizeof(data[i]), out_file);
 		}
 
 		printf("[*] Finished writing to file %s\n", out.c_str());
 
-		out_file.close();
+		fclose(out_file);
 	}
 	else
 	{
@@ -220,7 +204,7 @@ int main(int argc, char* argv[])
 		{
 			printf("[*] Generating key\n");
 			gen_key(key);
-			
+
 			// write key to file.key
 			int counter = 0;
 			char key_file_name[12];
@@ -235,10 +219,10 @@ int main(int argc, char* argv[])
 
 			printf("[*] Writing key into %s\n", key_file_name);
 
-			ofstream out_key_file(key_file_name, ios::binary);
-			out_key_file.write((char*)key, 16);
+			FILE* out_key_file = fopen(key_file_name, "wb");
+			fwrite((char*)key, 16, sizeof(byte), out_key_file);
 
-			out_key_file.close();
+			fclose(out_key_file);
 		}
 		cfb_algo(in_file, out_file, key, ENC);
 	}
