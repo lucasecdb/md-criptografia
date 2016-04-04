@@ -40,6 +40,13 @@ FMT_CHUNK;
 
 typedef struct
 {
+	RIFF_CHUNK riff;
+	FMT_CHUNK fmt;
+} __attribute__((__packed__))
+WAV_HDR;
+
+typedef struct
+{
 	BYTE sub_chunk_id[4];
 	DWORD sub_chunk_size;
 } __attribute__((__packed__))
@@ -51,14 +58,12 @@ public:
 	PCM(std::string file);
 
 	DWORD get_data_size();
+	DATA_CHUNK get_data_chunk();
 	BYTE* get_data();
 
-	RIFF_CHUNK get_riff();
-	FMT_CHUNK get_fmt();
-	DATA_CHUNK get_data_chunk();
+	WAV_HDR get_wav();
 private:
-	RIFF_CHUNK riff;
-	FMT_CHUNK fmt;
+	WAV_HDR wav_hdr;
 	DATA_CHUNK data_chunk;
 	BYTE *data;
 };

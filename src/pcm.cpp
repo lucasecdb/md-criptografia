@@ -3,34 +3,52 @@
 namespace PCM_MD
 {
 
+/**
+ * Compares the first len bytes of each string
+ */
+bool bytecmp(const char* w1, const char* w2, size_t len)
+{
+	for (int i = 0; i < len; i++)
+	{
+		if (w1[i] != w2[i])
+			return false;
+	}
+
+	return true;
+}
+
+/**
+ * Constructor for class PCM
+ */
 PCM::PCM(std::string file)
 {
 	FILE* audio = fopen(file.c_str(), "rb");
 
 	if (audio != NULL)
 	{
-		// read riff chunk header
-		fread(&riff, 1, sizeof(RIFF_CHUNK), audio);
+		// read wav chunk header
+		fread(&wav_hdr, 1, sizeof(RIFF_CHUNK), audio);
 
 		// check for proper file format
-		if (!(strcmp((char*)riff.chunk_id, "RIFF") == 0) || !(strcmp((char*)riff.format, "WAVE") == 0))
+		if (!bytecmp((char*)wav_hdr.riff.chunk_id, "RIFF", 4) || !bytecmp((char*)wav_hdr.riff.format, "WAVE", 4))
 		{
 			throw PCM_exception("[!] Invalid file format");
 		}
 
-		// get fmt chunk header
-		fread(&fmt, 1, sizeof(FMT_CHUNK), audio);
-		// get data metadata
-		fread(&data_chunk, 1, sizeof(DATA_CHUNK), audio);
+		// skip any chunk that comes before the data chunk
+		do
+		{
+			fread(&data_chunk, 1, sizeof(DATA_CHUNK), audio);
+		}
+		while (!bytecmp((char*)data_chunk.sub_chunk_id, "data", 4));
 
 		//data = new BYTE [data_chunk.sub_chunk_size];
 		BYTE data[data_chunk.sub_chunk_size];
 
+		printf("Data chunk size: %d\n", data_chunk.sub_chunk_size);
+
 		// read all data
-		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
-		{
-			fread(&data[i], 1, sizeof(BYTE), audio);
-		}
+		fread((void*)data, data_chunk.sub_chunk_size, sizeof(BYTE), audio);
 
 		this->data = data;
 
@@ -42,19 +60,12 @@ PCM::PCM(std::string file)
 	}
 }
 
+/**
+ * Return byte array of raw WAV data
+ */
 BYTE* PCM::get_data()
 {
 	return data;
-}
-
-RIFF_CHUNK PCM::get_riff()
-{
-	return riff;
-}
-
-FMT_CHUNK PCM::get_fmt()
-{
-	return fmt;
 }
 
 DATA_CHUNK PCM::get_data_chunk()
@@ -65,6 +76,16 @@ DATA_CHUNK PCM::get_data_chunk()
 DWORD PCM::get_data_size()
 {
 	return data_chunk.sub_chunk_size;
+}
+
+WAV_HDR PCM::get_wav()
+{
+	return wav_hdr;
+}
+
+// exception methods
+
+PCM_exception::~PCM_exception() throw() {
 }
 
 const char* PCM_exception::what() const throw()
