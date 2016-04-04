@@ -38,7 +38,7 @@ FMT_CHUNK;
 
 typedef struct
 {
-	DWORD sub_chunk_id;
+	BYTE sub_chunk_id[4];
 	DWORD sub_chunk_size;
 } __attribute__((__packed__))
 DATA_CHUNK;
