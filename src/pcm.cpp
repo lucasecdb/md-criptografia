@@ -3,29 +3,25 @@
 namespace PCM_MD
 {
 
-BYTE riffId[4] = {'R', 'I', 'F', 'F'};
-BYTE formatId[4] = {'W', 'A', 'V', 'E'};
-
 PCM::PCM(std::string file)
 {
-	std::ifstream audio(file.c_str(), std::ios::binary);
+	FILE* audio = fopen(file.c_str(), "rb");
 
-	if (audio.is_open())
+	if (audio != NULL)
 	{
 		// read riff chunk header
-		audio.read((char*) &riff, sizeof(RIFF_CHUNK));
+		fread(&riff, 1, sizeof(RIFF_CHUNK), audio);
 
 		// check for proper file format
-		if (!check_riff(riff) || !check_format(riff))
+		if (!(strcmp((char*)riff.chunk_id, "RIFF") == 0) || !(strcmp((char*)riff.format, "WAVE") == 0))
 		{
-			std::cerr << "Invalid file format.. exiting" << std::endl;
-			exit(1);
+			throw PCM_exception("[!] Invalid file format");
 		}
 
 		// get fmt chunk header
-		audio.read((char*) &fmt, sizeof(FMT_CHUNK));
+		fread(&fmt, 1, sizeof(FMT_CHUNK), audio);
 		// get data metadata
-		audio.read((char*) &data_chunk, sizeof(DATA_CHUNK));
+		fread(&data_chunk, 1, sizeof(DATA_CHUNK), audio);
 
 		//data = new BYTE [data_chunk.sub_chunk_size];
 		BYTE data[data_chunk.sub_chunk_size];
@@ -33,34 +29,17 @@ PCM::PCM(std::string file)
 		// read all data
 		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
 		{
-			audio.read((char*) &data[i], sizeof(BYTE));
+			fread(&data[i], 1, sizeof(BYTE), audio);
 		}
 
 		this->data = data;
 
-		audio.close();
+		fclose(audio);
 	}
 	else
 	{
-		std::cerr << "Couldn't open the file.. exiting" << std::endl;
-		exit(1);
+		throw PCM_exception("[!] Couldn't open the file");
 	}
-}
-
-bool PCM::check_format(RIFF_CHUNK r)
-{
-	for (int i = 0; i < 4; i++)
-		if (riff.format[i] != formatId[i])
-			return false;
-	return true;
-}
-
-bool PCM::check_riff(RIFF_CHUNK r)
-{
-	for (int i = 0; i < 4; i++)
-		if (riff.chunk_id[i] != riffId[i])
-			return false;
-	return true;
 }
 
 BYTE* PCM::get_data()
@@ -86,6 +65,11 @@ DATA_CHUNK PCM::get_data_chunk()
 DWORD PCM::get_data_size()
 {
 	return data_chunk.sub_chunk_size;
+}
+
+const char* PCM_exception::what() const throw()
+{
+	return this->message.c_str();
 }
 
 } // end of namespace

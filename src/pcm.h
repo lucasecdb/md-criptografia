@@ -1,9 +1,11 @@
 #ifndef _PCM_H
 #define _PCM_H
 
-#include <fstream>
 #include <iostream>
+#include <exception>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 namespace PCM_MD
@@ -25,7 +27,7 @@ RIFF_CHUNK;
 
 typedef struct
 {
-	DWORD sub_chunk_id;
+	BYTE sub_chunk_id[4];
 	DWORD sub_chunk_size;
 	WORD audio_format;
 	WORD num_channels;
@@ -55,13 +57,21 @@ public:
 	FMT_CHUNK get_fmt();
 	DATA_CHUNK get_data_chunk();
 private:
-	bool check_riff(RIFF_CHUNK r);
-	bool check_format(RIFF_CHUNK r);
-
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
 	DATA_CHUNK data_chunk;
 	BYTE *data;
+};
+
+class PCM_exception : public std::exception
+{
+public:
+	virtual const char* what() const throw();
+	PCM_exception(std::string message) : message(message) {};
+	~PCM_exception() throw();
+
+private:
+	std::string message;
 };
 
 } // end of namespace
