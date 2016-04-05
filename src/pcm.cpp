@@ -44,8 +44,6 @@ PCM::PCM(std::string file)
 
 		data = new BYTE[data_chunk.sub_chunk_size];
 
-		printf("Data chunk size: %d\n", data_chunk.sub_chunk_size);
-
 		// read all data
 		fread((void*)data, data_chunk.sub_chunk_size, sizeof(BYTE), audio);
 
