@@ -3,6 +3,16 @@
 namespace PCM_MD
 {
 
+// exception methods
+
+PCM_exception::~PCM_exception() throw() {
+}
+
+const char* PCM_exception::what() const throw()
+{
+	return this->message.c_str();
+}
+
 /**
  * Compares the first len bytes of each string
  */
@@ -20,7 +30,7 @@ bool bytecmp(const char* w1, const char* w2, size_t len)
 /**
  * Constructor for class PCM
  */
-PCM::PCM(std::string file)
+PCM::PCM(std::string file) throw(PCM_exception)
 {
 	FILE* audio = fopen(file.c_str(), "rb");
 
@@ -76,16 +86,6 @@ DWORD PCM::get_data_size()
 WAV_HDR PCM::get_wav()
 {
 	return wav_hdr;
-}
-
-// exception methods
-
-PCM_exception::~PCM_exception() throw() {
-}
-
-const char* PCM_exception::what() const throw()
-{
-	return this->message.c_str();
 }
 
 } // end of namespace

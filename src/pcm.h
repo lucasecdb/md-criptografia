@@ -52,10 +52,21 @@ typedef struct
 } __attribute__((__packed__))
 DATA_CHUNK;
 
+class PCM_exception : public std::exception
+{
+public:
+	virtual const char* what() const throw();
+	PCM_exception(std::string message) : message(message) {};
+	~PCM_exception() throw();
+
+private:
+	std::string message;
+};
+
 class PCM
 {
 public:
-	PCM(std::string file);
+	PCM(std::string file) throw(PCM_exception);
 
 	DWORD get_data_size();
 	DATA_CHUNK get_data_chunk();
@@ -66,17 +77,6 @@ private:
 	WAV_HDR wav_hdr;
 	DATA_CHUNK data_chunk;
 	BYTE *data;
-};
-
-class PCM_exception : public std::exception
-{
-public:
-	virtual const char* what() const throw();
-	PCM_exception(std::string message) : message(message) {};
-	~PCM_exception() throw();
-
-private:
-	std::string message;
 };
 
 } // end of namespace
