@@ -42,15 +42,12 @@ PCM::PCM(std::string file)
 		}
 		while (!bytecmp((char*)data_chunk.sub_chunk_id, "data", 4));
 
-		//data = new BYTE [data_chunk.sub_chunk_size];
-		BYTE data[data_chunk.sub_chunk_size];
+		data = new BYTE[data_chunk.sub_chunk_size];
 
 		printf("Data chunk size: %d\n", data_chunk.sub_chunk_size);
 
 		// read all data
 		fread((void*)data, data_chunk.sub_chunk_size, sizeof(BYTE), audio);
-
-		this->data = data;
 
 		fclose(audio);
 	}
