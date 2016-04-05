@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 			printf("[*] Writing key into %s\n", key_file_name);
 
 			FILE* out_key_file = fopen(key_file_name, "wb");
-			fwrite((char*)key, 16, sizeof(byte), out_key_file);
+			fwrite(key, 1, sizeof(byte) * 16, out_key_file);
 
 			fclose(out_key_file);
 		}
