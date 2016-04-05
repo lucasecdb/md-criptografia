@@ -46,7 +46,7 @@ void read_key(char* key_file, byte key[16])
 		exit(1);
 	}
 
-	FILE* file = fopen(key_file, "wb");
+	FILE* file = fopen(key_file, "rb");
 
 	if (file != NULL)
 	{
