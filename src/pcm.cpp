@@ -27,7 +27,7 @@ PCM::PCM(std::string file)
 	if (audio != NULL)
 	{
 		// read wav chunk header
-		fread(&wav_hdr, 1, sizeof(RIFF_CHUNK), audio);
+		fread(&wav_hdr, 1, sizeof(WAV_HDR), audio);
 
 		// check for proper file format
 		if (!bytecmp((char*)wav_hdr.riff.chunk_id, "RIFF", 4) || !bytecmp((char*)wav_hdr.riff.format, "WAVE", 4))
