@@ -31,14 +31,17 @@ void usage()
 	printf("\t-e [key_file]   Encrypt in_file with optional key in key_file and put the encryption result in out_file\n");
 }
 
+// generate random key using AutoSeededRandomPool (provided by CryptoPP)
 void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1])
 {
 	AutoSeededRandomPool rnd;
 	rnd.GenerateBlock(key, AES::DEFAULT_KEYLENGTH);
 }
 
+// read key from key_file and puts it in key
 void read_key(char* key_file, byte key[16])
 {
+	// check for file existence (unistd.h)
 	if (access(key_file, F_OK) == -1)
 	{
 		fprintf(stderr, "No such file %s\n", key_file);
@@ -46,8 +49,10 @@ void read_key(char* key_file, byte key[16])
 		exit(1);
 	}
 
+	// open file with read-binary mode
 	FILE* file = fopen(key_file, "rb");
 
+	// check if we opened it sucessfully
 	if (file != NULL)
 	{
 		// get file size and assert it to 16 bytes
@@ -63,10 +68,12 @@ void read_key(char* key_file, byte key[16])
 
 		fseek(file, 0, SEEK_SET);
 
+		// read 16 bytes from the file
 		for (int i = 0; i < 16; i++) {
 			fread(&key[i], 1, sizeof(key[i]), file);
 		}
 
+		// finally, close the file
 		fclose(file);
 	}
 	else
@@ -76,19 +83,22 @@ void read_key(char* key_file, byte key[16])
 	}
 }
 
+// write audio headers from in_audio in out file with data as data
 void write_audio(PCM *in_audio, string out, char* data)
 {
+	// open file with write-binary mode
 	FILE* out_file = fopen(out.c_str(), "wb");
 
+	// check if we opened it sucessfully
 	if (out_file != NULL)
 	{
 		printf("[*] Writing headers\n");
 
-		// WAV_HDR headers
+		// write WAV_HDR headers
 		WAV_HDR wav = in_audio->get_wav();
 		fwrite(&wav, 1, sizeof(wav), out_file);
 
-		// DATA_CHUNK headers
+		// write DATA_CHUNK headers
 		DATA_CHUNK data_chunk = in_audio->get_data_chunk();
 		fwrite(&data_chunk, 1, sizeof(data_chunk), out_file);
 
@@ -102,6 +112,7 @@ void write_audio(PCM *in_audio, string out, char* data)
 
 		printf("[*] Finished writing to file %s\n", out.c_str());
 
+		// finally, close the file
 		fclose(out_file);
 	}
 	else
@@ -111,11 +122,15 @@ void write_audio(PCM *in_audio, string out, char* data)
 	}
 }
 
+// crypt the data using CryptoPP library
 void cfb_algo(string in, string out, const byte* key, int opt)
 {
 	printf("[*] %s %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str());
 
+	// create PCM object dynamically to avoid double free errors
 	PCM *in_audio = new PCM(in);
+
+	// used to generate the iv randomly
 	AutoSeededRandomPool rnd;
 
 	// get raw audio data
@@ -127,11 +142,13 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 
 	if (opt == ENC)
 	{
+		// use CFB_Mode<AES>::Encryption object to encrypt data
 		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
 	else
 	{
+		// use CFB_Mode<AES>::Decryption object to decrypt data
 		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
@@ -139,8 +156,11 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 	printf("[*] Finished %s\n", opt == ENC ? "encrypting": "decrypting");
 
 	printf("[*] Writing to file %s\n", out.c_str());
+
+	// finally, write down to the file
 	write_audio(in_audio, out, data);
 	
+	// free in_audio to avoid leaks
 	delete in_audio;
 }
 
@@ -157,12 +177,14 @@ int main(int argc, char* argv[])
 	byte key[AES::DEFAULT_KEYLENGTH + 1];
 	char* key_file;
 
-	// get command line arguments
 	char c;
+
+	// get command line arguments
 	while ((c = getopt(argc, argv, "ed:")) != -1)
 	{
 		switch (c)
 		{
+			// in case of -e flag passed
 			case 'e':
 				ENCRYPT = true;
 				if (argc == 5)
@@ -172,6 +194,8 @@ int main(int argc, char* argv[])
 					read_key(key_file, key);
 				}
 				break;
+
+			// in case of -d flag passed
 			case 'd':
 				// check for proper usage
 				if (argc != 5)
@@ -183,6 +207,7 @@ int main(int argc, char* argv[])
 				key_file = optarg;
 				read_key(key_file, key);
 				break;
+			// if no flag passed
 			default:
 				usage();
 				return 1;
@@ -211,6 +236,8 @@ int main(int argc, char* argv[])
 			int counter = 0;
 			char key_file_name[12];
 
+			// write the format string to the key_file_name variable
+			// until we found a file that doesn't exist yet
 			sprintf(key_file_name, "%07d.key", counter);
 
 			while (access(key_file_name, F_OK) != -1)
@@ -221,15 +248,20 @@ int main(int argc, char* argv[])
 
 			printf("[*] Writing key into %s\n", key_file_name);
 
+			// open file with write-binary option
 			FILE* out_key_file = fopen(key_file_name, "wb");
+			// write the key
 			fwrite(key, 1, sizeof(byte) * 16, out_key_file);
 
+			// finally, close the file
 			fclose(out_key_file);
 		}
+		// crypt the file
 		cfb_algo(in_file, out_file, key, ENC);
 	}
 	else
 	{
+		// decrypt the file
 		cfb_algo(in_file, out_file, key, DEC);
 	}
 }
