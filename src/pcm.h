@@ -67,6 +67,7 @@ class PCM
 {
 public:
 	PCM(std::string file) throw(PCM_exception);
+	~PCM();
 
 	DWORD get_data_size();
 	DATA_CHUNK get_data_chunk();

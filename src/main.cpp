@@ -76,7 +76,7 @@ void read_key(char* key_file, byte key[16])
 	}
 }
 
-void write_audio(PCM in_audio, string out, char* data)
+void write_audio(PCM *in_audio, string out, char* data)
 {
 	FILE* out_file = fopen(out.c_str(), "wb");
 
@@ -85,11 +85,11 @@ void write_audio(PCM in_audio, string out, char* data)
 		printf("[*] Writing headers\n");
 
 		// WAV_HDR headers
-		WAV_HDR wav = in_audio.get_wav();
+		WAV_HDR wav = in_audio->get_wav();
 		fwrite(&wav, 1, sizeof(wav), out_file);
 
 		// DATA_CHUNK headers
-		DATA_CHUNK data_chunk = in_audio.get_data_chunk();
+		DATA_CHUNK data_chunk = in_audio->get_data_chunk();
 		fwrite(&data_chunk, 1, sizeof(data_chunk), out_file);
 
 		printf("[*] Writing data\n");
@@ -115,11 +115,11 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 {
 	printf("[*] %s %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str());
 
-	PCM in_audio(in);
+	PCM *in_audio = new PCM(in);
 	AutoSeededRandomPool rnd;
 
 	// get raw audio data
-	char* data = (char*) in_audio.get_data();
+	char* data = (char*) in_audio->get_data();
 
 	// gen random iv
 	byte iv[AES::BLOCKSIZE];
@@ -128,18 +128,20 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 	if (opt == ENC)
 	{
 		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
-		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
 	else
 	{
 		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
-		cfb.ProcessData((byte*)data, (byte*)data, in_audio.get_data_size());
+		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
 
 	printf("[*] Finished %s\n", opt == ENC ? "encrypting": "decrypting");
 
 	printf("[*] Writing to file %s\n", out.c_str());
 	write_audio(in_audio, out, data);
+	
+	delete in_audio;
 }
 
 int main(int argc, char* argv[])

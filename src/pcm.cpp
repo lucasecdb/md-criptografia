@@ -65,6 +65,11 @@ PCM::PCM(std::string file) throw(PCM_exception)
 	}
 }
 
+PCM::~PCM()
+{
+	delete[] data;
+}
+
 /**
  * Return byte array of raw WAV data
  */
