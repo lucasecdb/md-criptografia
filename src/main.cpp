@@ -132,10 +132,15 @@ void cfb_algo(string in, string out, const byte* key, int opt) {
 		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
-	else {
+	else if (opt == DEC) {
 		// use CFB_Mode<AES>::Decryption object to decrypt data
 		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
+	}
+	else {
+		fprintf(stderr, "[!] Invalid option\n");
+		delete in_audio;
+		exit(1);
 	}
 
 	printf("[*] Finished %s\n", opt == ENC ? "encrypting": "decrypting");
