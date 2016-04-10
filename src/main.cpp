@@ -37,7 +37,7 @@ void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1]) {
 
 // read key from key_file and puts it in key
 void read_key(char* key_file, byte key[16]) {
-	// check for file existence (unistd.h)
+	// check for file existence
 	if (access(key_file, F_OK) == -1) {
 		fprintf(stderr, "No such file %s\n", key_file);
 		usage();
@@ -47,7 +47,7 @@ void read_key(char* key_file, byte key[16]) {
 	// open file with read-binary mode
 	FILE* file = fopen(key_file, "rb");
 
-	// check if we opened it sucessfully
+	// check if we sucessfully opened it
 	if (file != NULL) {
 		// get file size and assert it to 16 bytes
 		fseek(file, 0, SEEK_END);
