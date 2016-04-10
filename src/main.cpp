@@ -17,14 +17,12 @@ using namespace CryptoPP;
 bool ENCRYPT = false;
 bool NO_GEN = false;
 
-enum
-{
+enum {
 	ENC,
 	DEC
 };
 
-void usage()
-{
+void usage() {
 	printf("usage: ./pcm-crypt [OPTIONS...] in_file out_file\n");
 	printf("\nOptions:\n");
 	printf("\t-d key_file     Decrypt in_file with key in the key_file and put the decryption result in out_file\n");
@@ -32,18 +30,15 @@ void usage()
 }
 
 // generate random key using AutoSeededRandomPool (provided by CryptoPP)
-void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1])
-{
+void gen_key(byte key[AES::DEFAULT_KEYLENGTH + 1]) {
 	AutoSeededRandomPool rnd;
 	rnd.GenerateBlock(key, AES::DEFAULT_KEYLENGTH);
 }
 
 // read key from key_file and puts it in key
-void read_key(char* key_file, byte key[16])
-{
+void read_key(char* key_file, byte key[16]) {
 	// check for file existence (unistd.h)
-	if (access(key_file, F_OK) == -1)
-	{
+	if (access(key_file, F_OK) == -1) {
 		fprintf(stderr, "No such file %s\n", key_file);
 		usage();
 		exit(1);
@@ -53,14 +48,12 @@ void read_key(char* key_file, byte key[16])
 	FILE* file = fopen(key_file, "rb");
 
 	// check if we opened it sucessfully
-	if (file != NULL)
-	{
+	if (file != NULL) {
 		// get file size and assert it to 16 bytes
 		fseek(file, 0, SEEK_END);
 		int size = ftell(file);
 
-		if (size != 16)
-		{
+		if (size != 16) {
 			fprintf(stderr, "File %s must be only 16 bytes long\n", key_file);
 			usage();
 			exit(1);
@@ -76,22 +69,19 @@ void read_key(char* key_file, byte key[16])
 		// finally, close the file
 		fclose(file);
 	}
-	else
-	{
+	else {
 		fprintf(stderr, "Couldn't open file %s, exiting...\n", key_file);
 		exit(1);
 	}
 }
 
 // write audio headers from in_audio in out file with data as data
-void write_audio(PCM *in_audio, string out, char* data)
-{
+void write_audio(PCM *in_audio, string out, char* data) {
 	// open file with write-binary mode
 	FILE* out_file = fopen(out.c_str(), "wb");
 
 	// check if we opened it sucessfully
-	if (out_file != NULL)
-	{
+	if (out_file != NULL) {
 		printf("[*] Writing headers\n");
 
 		// write WAV_HDR headers
@@ -105,8 +95,7 @@ void write_audio(PCM *in_audio, string out, char* data)
 		printf("[*] Writing data\n");
 
 		// write actual crypted data
-		for (int i = 0; i < data_chunk.sub_chunk_size; i++)
-		{
+		for (int i = 0; i < data_chunk.sub_chunk_size; i++) {
 			fwrite(&data[i], 1, sizeof(data[i]), out_file);
 		}
 
@@ -115,16 +104,14 @@ void write_audio(PCM *in_audio, string out, char* data)
 		// finally, close the file
 		fclose(out_file);
 	}
-	else
-	{
+	else {
 		fprintf(stderr, "[!!] Couldn't open %s, exiting..\n", out.c_str());
 		exit(1);
 	}
 }
 
 // crypt the data using CryptoPP library
-void cfb_algo(string in, string out, const byte* key, int opt)
-{
+void cfb_algo(string in, string out, const byte* key, int opt) {
 	printf("[*] %s %s\n", opt == ENC ? "Encrypting": "Decrypting", in.c_str());
 
 	// create PCM object dynamically to avoid double free errors
@@ -140,14 +127,12 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 	byte iv[AES::BLOCKSIZE];
 	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
 
-	if (opt == ENC)
-	{
+	if (opt == ENC) {
 		// use CFB_Mode<AES>::Encryption object to encrypt data
 		CFB_Mode<AES>::Encryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
 	}
-	else
-	{
+	else {
 		// use CFB_Mode<AES>::Decryption object to decrypt data
 		CFB_Mode<AES>::Decryption cfb(key, AES::DEFAULT_KEYLENGTH, iv, 1);
 		cfb.ProcessData((byte*)data, (byte*)data, in_audio->get_data_size());
@@ -164,11 +149,9 @@ void cfb_algo(string in, string out, const byte* key, int opt)
 	delete in_audio;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 	// ensure proper usage
-	if (argc < 4 || argc > 5)
-	{
+	if (argc < 4 || argc > 5) {
 		usage();
 		return 1;
 	}
@@ -180,15 +163,12 @@ int main(int argc, char* argv[])
 	char c;
 
 	// get command line arguments
-	while ((c = getopt(argc, argv, "ed:")) != -1)
-	{
-		switch (c)
-		{
+	while ((c = getopt(argc, argv, "ed:")) != -1) {
+		switch (c) {
 			// in case of -e flag passed
 			case 'e':
 				ENCRYPT = true;
-				if (argc == 5)
-				{
+				if (argc == 5) {
 					NO_GEN = true;
 					key_file = argv[optind];
 					read_key(key_file, key);
@@ -198,8 +178,7 @@ int main(int argc, char* argv[])
 			// in case of -d flag passed
 			case 'd':
 				// check for proper usage
-				if (argc != 5)
-				{
+				if (argc != 5) {
 					fprintf(stderr, "In decryption mode, you must give a file with a key of %d bytes long.\n", AES::DEFAULT_KEYLENGTH);
 					usage();
 					return 1;
@@ -218,17 +197,14 @@ int main(int argc, char* argv[])
 	string out_file = argv[argc-1];
 
 	// check for file existence
-	if (access(in_file.c_str(), F_OK) == -1)
-	{
+	if (access(in_file.c_str(), F_OK) == -1) {
 		fprintf(stderr, "No such file %s\n", in_file.c_str());
 		usage();
 		return 1;
 	}
 
-	if (ENCRYPT)
-	{
-		if (!NO_GEN)
-		{
+	if (ENCRYPT) {
+		if (!NO_GEN) {
 			printf("[*] Generating key\n");
 			gen_key(key);
 
@@ -240,8 +216,7 @@ int main(int argc, char* argv[])
 			// until we found a file that doesn't exist yet
 			sprintf(key_file_name, "%07d.key", counter);
 
-			while (access(key_file_name, F_OK) != -1)
-			{
+			while (access(key_file_name, F_OK) != -1) {
 				counter++;
 				sprintf(key_file_name, "%07d.key", counter);
 			}
@@ -259,8 +234,7 @@ int main(int argc, char* argv[])
 		// crypt the file
 		cfb_algo(in_file, out_file, key, ENC);
 	}
-	else
-	{
+	else {
 		// decrypt the file
 		cfb_algo(in_file, out_file, key, DEC);
 	}

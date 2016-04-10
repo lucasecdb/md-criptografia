@@ -11,8 +11,7 @@
 #include <stdlib.h>
 
 // define our namespace
-namespace PCM_MD
-{
+namespace PCM_MD {
 
 // Data types adapted from Microsoft
 typedef uint8_t  BYTE;  // 1 byte
@@ -20,16 +19,14 @@ typedef uint32_t DWORD; // 4 bytes (unsigned)
 typedef int32_t  LONG;  // 4 bytes
 typedef uint16_t WORD;	// 2 bytes (unsigned)
 
-typedef struct
-{
+typedef struct {
 	BYTE chunk_id[4];
 	DWORD chunk_size;
 	BYTE format[4];
 } __attribute__((__packed__))
 RIFF_CHUNK;
 
-typedef struct
-{
+typedef struct {
 	BYTE sub_chunk_id[4];
 	DWORD sub_chunk_size;
 	WORD audio_format;
@@ -41,23 +38,20 @@ typedef struct
 } __attribute__((__packed__))
 FMT_CHUNK;
 
-typedef struct
-{
+typedef struct {
 	RIFF_CHUNK riff;
 	FMT_CHUNK fmt;
 } __attribute__((__packed__))
 WAV_HDR;
 
-typedef struct
-{
+typedef struct {
 	BYTE sub_chunk_id[4];
 	DWORD sub_chunk_size;
 } __attribute__((__packed__))
 DATA_CHUNK;
 
 // our "custom" exception
-class PCM_exception : public std::exception
-{
+class PCM_exception : public std::exception {
 public:
 	virtual const char* what() const throw();
 	PCM_exception(std::string message) : message(message) {};
@@ -68,8 +62,7 @@ private:
 };
 
 // PCM class to represent the WAV file
-class PCM
-{
+class PCM {
 public:
 	// constructor
 	PCM(std::string file) throw(PCM_exception);
