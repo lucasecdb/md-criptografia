@@ -15,7 +15,7 @@ using namespace PCM_MD;
 using namespace CryptoPP;
 
 bool ENCRYPT = false;
-bool NO_GEN = false;
+bool NO_KEYGEN = false;
 
 enum {
 	ENC,
@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
 			case 'e':
 				ENCRYPT = true;
 				if (argc == 5) {
-					NO_GEN = true;
+					NO_KEYGEN = true;
 					key_file = argv[optind];
 					read_key(key_file, key);
 				}
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (ENCRYPT) {
-		if (!NO_GEN) {
+		if (!NO_KEYGEN) {
 			printf("[*] Generating key\n");
 			gen_key(key);
 
