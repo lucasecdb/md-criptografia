@@ -40,6 +40,6 @@ class MinhaClasse : public ClassePai {
 
 Logo depois, eu defini os métodos e atributos para a classe PCM, que serão implementadas no arquivo pcm.cpp. Em C++, diferente de Java, é possível (e preferível) separar a implementação dos métodos de uma certa classe da sua definição. Isto pode ser pensado como uma "interface" em Java, onde seus métodos são implementados em outra classe. Só que em C++, essa implementação é da **mesma classe**, porém, em arquivos diferentes.
 
-### Pre-processador ifndef \_PCM\_H
+### Pré-processador \#ifndef \_PCM\_H
 
 Isso é feito por um motivo bastante simples e compreensível. Ao fazer um import de um arquivo em C++, diferente de Java (que importamos classes ou pacotes), nós importamos arquivos .h usando o pre-processador #include. Mas, caso aconteça de incluirmos o mesmo arquivo .h mais de uma vez (e que não é difícil de acontecer), temos que nos certificar de que não iremos definir a mesma coisa duas vezes, que pode causar um erro de compilação do código. Ai que entra o pré-processador #ifndef. O que ele faz é basicamente perguntar ao compilador se ja definimos uma variável chamada \_PCM\_H (esse nome é apenas uma convenção usada entre programadores) usando o pré-processador #define. Se não tivermos definido ele (importamos o arquivo pela primeira vez), definimos tudo que a gente precisa para utilizar a nossa biblioteca, incluindo o próprio \_PCM\_H, e caso contrário (importamos pela segunda vez ou mais), não iremos definir mais nada para evitar o erro de compilação.
