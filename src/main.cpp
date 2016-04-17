@@ -1,7 +1,5 @@
-#include <iostream>
 #include <unistd.h>
 #include <stdio.h>
-#include <ctime>
 
 // PCM library
 #include "pcm.h"
