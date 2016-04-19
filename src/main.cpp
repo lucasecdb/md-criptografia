@@ -148,7 +148,7 @@ void cfb_algo(string in, string out, const byte* key, int opt) {
 
 	// finally, write down to the file
 	write_audio(in_audio, out, data);
-	
+
 	// free in_audio to avoid leaks
 	delete in_audio;
 }
