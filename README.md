@@ -1,7 +1,3 @@
-# Criptografia - Matemática Discreta
+# PCM Crypt
 
-Projeto da disciplina de Matemática Discreta - UFCG 2015.2.
-
-## Descrição
-
-Um programa para aplicar criptografia simétrica (AES 128-bits) em um trecho de áudio e que seja capaz de decodificar o trecho de áudio cifrado. (Este programa poderia ser usado como aplicativo para cifrar ligações de celulares)
+A tool to encrypt and decrypt pcm audio files
